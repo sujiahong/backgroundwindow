@@ -35,7 +35,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
-LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	return 1;
 }
@@ -65,7 +65,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		logoImgPath = lpwArgv[1];
 	}
 	else {
-		MessageBoxA(NULL, "需要两个参数，背景图片和logo图片", "错误", MB_OK);
+		//MessageBoxA(NULL, "需要两个参数，背景图片和logo图片", "错误", MB_OK);
 		char path[] = "E:\default_bk.jpg";
 		wchar_t wpath[20];
 		mbstowcs_s(NULL, wpath, path, strlen(path) + 1);
@@ -74,7 +74,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		wchar_t wlogopath[20];
 		mbstowcs_s(NULL, wlogopath, logoPath, strlen(logoPath) + 1);
 		logoImgPath = wlogopath;
-		return 0;
+		//return 0;
 	}
 	
 
@@ -161,7 +161,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 将实例句柄存储在全局变量中
    SWidth = GetSystemMetrics(SM_CXSCREEN);
    SHeight = GetSystemMetrics(SM_CYSCREEN);
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_POPUP|WS_VISIBLE,
+   HWND hWnd = CreateWindowExW(WS_EX_NOACTIVATE, szWindowClass, szTitle, WS_POPUP,
       0, 0, SWidth, SHeight, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
@@ -169,9 +169,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
    hwnd = hWnd;
-   SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
+   ShowWindow(hWnd, SW_SHOWNOACTIVATE);
+   //UpdateWindow(hWnd);
    
    return TRUE;
 }
@@ -347,6 +347,10 @@ DWORD WINAPI PBThreadProc(LPVOID lpParameter)
 	while (1) {
 		SendMessage(hwndpb, PBM_DELTAPOS, (range.iHigh - range.iLow)/100, 0);
 		cur = SendMessage(hwndpb, PBM_GETPOS, 0, 0);
+		if (cur < 1) {
+			HDC hdc = GetDC(hwndpb);
+			drawBackground(hdc);
+		}
 		if (cur > 0 && cur < 50) {
 			Sleep(400);
 		}
@@ -397,7 +401,7 @@ DWORD WINAPI PaintProc(LPVOID lpParrameter)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	char buff[50] = { 0 };
-	sprintf_s(buff, "@@@  %ud\n", message);
+	sprintf_s(buff, "@@@  %ud  %ud %ld\n", message, wParam, lParam);
 	OutputDebugStringA(buff);
     switch (message)
     {
@@ -421,6 +425,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 		SetWindowsHookEx(WH_MOUSE, MouseProc, GetModuleHandle(NULL), GetCurrentThreadId());
+		SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, GetModuleHandle(NULL), GetCurrentThreadId());
 		InitCommonControls();
 		hwndPB = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE| PBS_SMOOTH, 0, 0, 0, 0,
 			hWnd, 0, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
@@ -439,9 +444,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		// TODO: 在此处添加使用 hdc 的任何绘图代码...
 		//FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-		if (isPaint)
+		if (isPaint) {
 			paint(hWnd);
-		//SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+			SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+		}
 	}
 		break;
     case WM_DESTROY:
