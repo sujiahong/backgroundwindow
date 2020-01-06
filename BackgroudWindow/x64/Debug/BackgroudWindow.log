@@ -1,6 +1,17 @@
-﻿  stdafx.cpp
-  BackgroudWindow.cpp
-f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(69): warning C4129: “d”: 不可识别的字符转义序列
-f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(73): warning C4129: “g”: 不可识别的字符转义序列
-f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(202): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+﻿  BackgroudWindow.cpp
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(79): warning C4129: “d”: 不可识别的字符转义序列
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(83): warning C4129: “g”: 不可识别的字符转义序列
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(204): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(308): warning C4244: “参数”: 从“float”转换到“INT”，可能丢失数据
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(316): warning C4244: “参数”: 从“float”转换到“INT”，可能丢失数据
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(330): warning C4244: “参数”: 从“float”转换到“INT”，可能丢失数据
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(334): warning C4244: “参数”: 从“float”转换到“INT”，可能丢失数据
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): warning C4477: “sprintf_s”: 格式字符串“%u”需要类型“unsigned int”的参数，但可变参数 2 拥有了类型“WPARAM”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%llu”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%Iu”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%I64u”
+f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): warning C4477: “sprintf_s”: 格式字符串“%ld”需要类型“long”的参数，但可变参数 3 拥有了类型“LPARAM”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%lld”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%Id”
+  f:\workspace\backgroudwindow\backgroudwindow\backgroudwindow.cpp(507): note: 请考虑在格式字符串中使用“%I64d”
   BackgroudWindow.vcxproj -> F:\workspace\BackgroudWindow\x64\Debug\BackgroudWindow.exe

@@ -22,6 +22,12 @@ int pStat = 0;
 LPWSTR bgImgPath = NULL;
 LPWSTR logoImgPath = NULL;
 wchar_t wstr[50] = { 0 };
+unsigned short barWidth = 800;
+unsigned short barHeight = 12;
+float barUnit = 8.0;
+unsigned short curVal = 1;
+const unsigned short pbMaxTimes = 100;
+unsigned short curPb = 0;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -61,19 +67,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	LPWSTR* lpwArgv = NULL;
 	lpwArgv = CommandLineToArgvW(lpCmdLine, &argc);
 	if (argc == 2) {
-		bgImgPath = lpwArgv[0];
-		logoImgPath = lpwArgv[1];
+		bgImgPath = lpwArgv[1];
+		logoImgPath = LPWSTR(L"C:\\gloud_games_backgroud\\glogo.png");
 	}
+	//else if (argc == 1) {
+	//	bgImgPath = lpwArgv[0];
+	//	logoImgPath = LPWSTR(L"C:\gloud_games_backgroud\glogo.png");
+	//}
 	else {
-		//MessageBoxA(NULL, "需要两个参数，背景图片和logo图片", "错误", MB_OK);
-		char path[] = "E:\default_bk.jpg";
-		wchar_t wpath[20];
-		mbstowcs_s(NULL, wpath, path, strlen(path) + 1);
-		bgImgPath = wpath;
-		char logoPath[] = "E:\glogo.png";
-		wchar_t wlogopath[20];
-		mbstowcs_s(NULL, wlogopath, logoPath, strlen(logoPath) + 1);
-		logoImgPath = wlogopath;
+		MessageBoxA(NULL, "需要两个参数，背景图片和logo图片", "错误", MB_OK);
+		bgImgPath = LPWSTR(L"E:\\default_bk.jpg");
+		logoImgPath = LPWSTR(L"E:\\glogo.png");
 		//return 0;
 	}
 	
@@ -119,12 +123,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 
-
-//
 //  函数: MyRegisterClass()
-//
 //  目标: 注册窗口类。
-//
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex;
@@ -148,14 +148,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 //
 //   函数: InitInstance(HINSTANCE, int)
-//
 //   目标: 保存实例句柄并创建主窗口
-//
 //   注释:
-//
 //        在此函数中，我们在全局变量中保存实例句柄并
 //        创建和显示主程序窗口。
-//
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 将实例句柄存储在全局变量中
@@ -178,13 +174,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 void drawWord(HDC hdc, LPCSTR str)
 {	
-	HFONT hFont = CreateFont(70, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, MAC_CHARSET, OUT_STRING_PRECIS,
+	HFONT hFont = CreateFont(50, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, MAC_CHARSET, OUT_STRING_PRECIS,
 		CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("微软雅黑"));
 	
 	SelectObject(hdc, hFont);
-	SetRect(&rect, (SWidth*75)/100, (SHeight*84)/100, (SWidth*75)/100+450, (SHeight*84)/100+70);
+	SetRect(&rect, (SWidth*425)/1000, (SHeight*74)/100, (SWidth*75)/100+450, (SHeight*84)/100+70);
 	
-	SetTextColor(hdc, RGB(0, 230, 30));
+	SetTextColor(hdc, RGB(35, 170, 55));
 	//FillRect(hdc, &rect, brush);
 	SetBkMode(hdc, TRANSPARENT);
 	DrawTextA(hdc, str, -1, &rect, DT_LEFT);
@@ -277,6 +273,111 @@ void drawTextString(HDC hdc)
 	}
 }
 
+void drawGif(HDC hdc) {
+	Gdiplus::Graphics graphics(hdc);
+	Gdiplus::Image image(L"E:\\ganim.gif");
+	Gdiplus::Rect destRect(500, 300, 400, 400);
+	graphics.DrawImage(&image, destRect);
+}
+
+void drawProgressBK(HDC hdc)
+{
+	Gdiplus::Graphics graphics(hdc);
+	Gdiplus::Image image(L"C:\\gloud_games_backgroud\\pbk.png");
+	Gdiplus::Rect destRect((SWidth-barWidth)/2, SHeight*7/10, barWidth, barHeight);
+	graphics.DrawImage(&image, destRect);
+}
+
+void rePaint(HWND hWnd) {
+	HDC hdc = GetDC(hWnd);
+	HDC mdc = CreateCompatibleDC(hdc);
+	HBITMAP hBMMem = CreateCompatibleBitmap(hdc, SWidth, SHeight);
+	SelectObject(mdc, hBMMem);
+	drawBackground(mdc);
+	drawLogo(mdc);
+	BitBlt(hdc, 0, 0, SWidth, SHeight, mdc, 0, 0, SRCCOPY);
+	DeleteObject(hBMMem);
+	DeleteDC(mdc);
+	DeleteDC(hdc);
+	Sleep(10000);
+}
+
+void drawProgressBarLeft(HDC hdc)
+{
+	Gdiplus::Graphics graphics(hdc);
+	Gdiplus::Image image(L"C:\\gloud_games_backgroud\\pbar_l.png");
+	Gdiplus::Rect destRect((SWidth - barWidth) / 2, SHeight * 7 / 10, barUnit, barHeight);
+	graphics.DrawImage(&image, destRect);
+}
+
+void drawProgressBar(HDC hdc)
+{
+	Gdiplus::Graphics graphics(hdc);
+	Gdiplus::Image image(L"C:\\gloud_games_backgroud\\pbar_c.png");
+	Gdiplus::Rect destRect;
+	for (int i = 1; i < curVal; ++i) {
+		destRect = Gdiplus::Rect((SWidth - barWidth) / 2 + barUnit * i, SHeight * 7 / 10, barUnit, barHeight);
+		graphics.DrawImage(&image, destRect);
+	}
+	Gdiplus::Image rImage(L"C:\\gloud_games_backgroud\\pbar_r.png");
+	destRect = Gdiplus::Rect((SWidth - barWidth) / 2 + barUnit * curVal, SHeight * 7 / 10, barUnit, barHeight);
+	graphics.DrawImage(&rImage, destRect);
+}
+
+void controlProgressBar(HDC hdc) {
+	if (curVal >= 1 && curVal < 50) {
+		if (curPb == 2) {
+			drawProgressBar(hdc);
+			curVal += 1;
+			curPb = 0;
+		}
+		else {
+			drawProgressBar(hdc);
+		}
+	}
+	else if (curVal >= 50 && curVal < 90) {
+		if (curPb == 10) {
+			drawProgressBar(hdc);
+			curVal += 1;
+			curPb = 0;
+		}
+		else {
+			drawProgressBar(hdc);
+		}
+	}
+	else if (curVal >= 90 && curVal < 98) {
+		if (curPb == 40) {
+			drawProgressBar(hdc);
+			curVal += 1;
+			curPb = 0;
+		}
+		else {
+			drawProgressBar(hdc);
+		}
+	}
+	else if (curVal == 98) {
+		if (curPb == 200) {
+			drawProgressBar(hdc);
+			curVal += 1;
+			curPb = 0;
+		}
+		else {
+			drawProgressBar(hdc);
+		}
+	}
+	else {
+		if (curPb == 50) {
+			drawProgressBar(hdc);
+			curVal += 1;
+			curPb = 0;
+		}
+		else {
+			drawProgressBar(hdc);
+		}
+	}
+	++curPb;
+}
+
 void paint(HWND hWnd)
 {
 	PAINTSTRUCT ps;
@@ -287,27 +388,18 @@ void paint(HWND hWnd)
 	drawBackground(mdc);
 	drawLogo(mdc);
 	drawText(mdc);
+	drawProgressBK(mdc);
+	drawProgressBarLeft(mdc);
+	controlProgressBar(mdc);
 	BitBlt(hdc, 0, 0, SWidth, SHeight, mdc, 0, 0, SRCCOPY);
 	DeleteObject(hBMMem);
 	DeleteDC(mdc);
 	DeleteDC(hdc);
 	EndPaint(hWnd, &ps);
 
-	InvalidateRect(hWnd, &rect, false);
-	Sleep(1000);
-	//RedrawWindow(hWnd, NULL, NULL, RDW_INTERNALPAINT|RDW_INVALIDATE|RDW_UPDATENOW);
-}
-
-void rePaint(HWND hWnd) {
-	HDC hdc = GetDC(hWnd);
-	HDC mdc = CreateCompatibleDC(hdc);
-	HBITMAP hBMMem = CreateCompatibleBitmap(hdc, SWidth, SHeight);
-	SelectObject(mdc, hBMMem);
-	drawBackground(mdc);
-	BitBlt(hdc, 0, 0, SWidth, SHeight, mdc, 0, 0, SRCCOPY);
-	DeleteObject(hBMMem);
-	DeleteDC(mdc);
-	ReleaseDC(hWnd, hdc);
+	//InvalidateRect(hWnd, &rect, false);
+	RedrawWindow(hWnd, NULL, NULL, RDW_INTERNALPAINT | RDW_INVALIDATE | RDW_ERASE);
+	Sleep(200);
 }
 
 void drawDyWord(HWND hWnd)
@@ -346,11 +438,12 @@ DWORD WINAPI PBThreadProc(LPVOID lpParameter)
 	//SendMessage(hwndpb, PBM_SETSTEP, 1, 0);
 	while (1) {
 		SendMessage(hwndpb, PBM_DELTAPOS, (range.iHigh - range.iLow)/100, 0);
-		cur = SendMessage(hwndpb, PBM_GETPOS, 0, 0);
-		if (cur < 1) {
+		if (pStat == 0) {
 			HDC hdc = GetDC(hwndpb);
 			drawBackground(hdc);
+			pStat = 1;
 		}
+		cur = SendMessage(hwndpb, PBM_GETPOS, 0, 0);
 		if (cur > 0 && cur < 50) {
 			Sleep(400);
 		}
@@ -397,39 +490,23 @@ DWORD WINAPI PaintProc(LPVOID lpParrameter)
 //  WM_PAINT    - 绘制主窗口
 //  WM_DESTROY  - 发送退出消息并返回
 //
-//
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	char buff[50] = { 0 };
-	sprintf_s(buff, "@@@  %ud  %ud %ld\n", message, wParam, lParam);
-	OutputDebugStringA(buff);
+	//char buff[50] = { 0 };
+	//sprintf_s(buff, "@@@  %ud  %ud %ld\n", message, wParam, lParam);
+	//OutputDebugStringA(buff);
     switch (message)
     {
     case WM_COMMAND:
-        {
-            //int wmId = LOWORD(wParam);
-            //// 分析菜单选择:
-            //switch (wmId)
-            //{
-            //case IDM_ABOUT:
-            //    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-            //    break;
-            //case IDM_EXIT:
-            //    DestroyWindow(hWnd);
-            //    break;
-            //default:
-            //    return DefWindowProc(hWnd, message, wParam, lParam);
-            //}
-        }
         break;
 	case WM_CREATE:
 	{
 		SetWindowsHookEx(WH_MOUSE, MouseProc, GetModuleHandle(NULL), GetCurrentThreadId());
 		SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, GetModuleHandle(NULL), GetCurrentThreadId());
-		InitCommonControls();
-		hwndPB = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE| PBS_SMOOTH, 0, 0, 0, 0,
-			hWnd, 0, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
-		CreateThread(NULL, 0, PBThreadProc, hwndPB, 0, 0);
+		//InitCommonControls();
+		//hwndPB = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE| PBS_SMOOTH, 0, 0, 0, 0,
+		//	hWnd, 0, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+		//CreateThread(NULL, 0, PBThreadProc, hwndPB, 0, 0);
 		//CreateThread(NULL, 0, PaintProc, hWnd, 0, 0);
 		return 0;
 	}
@@ -445,7 +522,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// TODO: 在此处添加使用 hdc 的任何绘图代码...
 		//FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
 		if (isPaint) {
-			paint(hWnd);
+			if (curVal >= pbMaxTimes) {
+				rePaint(hWnd);
+				//isPaint = false;
+			}else
+				paint(hWnd);
 			SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 		}
 	}
